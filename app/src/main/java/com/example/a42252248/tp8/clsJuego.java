@@ -51,7 +51,11 @@ public class clsJuego {
             BackgroundImage = Sprite.sprite("background.png");
             BackgroundImage.setPosition(DeviceDisplay.width/2, DeviceDisplay.height/2);
 
-            BackgroundImage.runAction(ScaleBy.action(0.01f, 2.0f, 2.0f));
+            Float BkgWidth, BkgHeight;
+            BkgWidth = DeviceDisplay.width /  BackgroundImage.getWidth();
+            BkgHeight = DeviceDisplay.height / BackgroundImage.getHeight();
+
+            BackgroundImage.runAction(ScaleBy.action(0.01f, BkgWidth, BkgHeight));
 
             super.addChild(BackgroundImage);
         }
