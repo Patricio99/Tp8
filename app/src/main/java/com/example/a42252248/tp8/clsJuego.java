@@ -1,5 +1,6 @@
 package com.example.a42252248.tp8;
 
+import org.cocos2d.actions.interval.MoveTo;
 import org.cocos2d.actions.interval.ScaleBy;
 import org.cocos2d.layers.Layer;
 import org.cocos2d.nodes.Director;
@@ -7,6 +8,7 @@ import org.cocos2d.nodes.Scene;
 import org.cocos2d.nodes.Sprite;
 import org.cocos2d.opengl.CCGLSurfaceView;
 import org.cocos2d.particlesystem.ParticleSpiral;
+import org.cocos2d.types.CCPoint;
 import org.cocos2d.types.CCSize;
 
 /**
@@ -17,6 +19,7 @@ public class clsJuego {
     CCGLSurfaceView _VistaDelJuego;
     CCSize DeviceDisplay;
     Sprite AutoJugador;
+    Sprite AutoEnemigo;
     Sprite BackgroundImage;
     public clsJuego(CCGLSurfaceView VistaDelJuego){
         _VistaDelJuego = VistaDelJuego;
@@ -64,6 +67,7 @@ public class clsJuego {
     class CapaDelFrente extends Layer {
         public CapaDelFrente(){
             PonerAutoPosInicial();
+            PonerAutoEnemigo();
         }
         private void PonerAutoPosInicial(){
             AutoJugador = Sprite.sprite("AutoJugador.png");
@@ -74,6 +78,29 @@ public class clsJuego {
             AutoJugador.setPosition(PosIX, PosIY);
 
             super.addChild(AutoJugador);
+        }
+        private void PonerAutoEnemigo(){
+            AutoEnemigo = Sprite.sprite("AutoEnemigo.png");
+
+            Float PosIX, PosIY;
+            Float EnemyHeight;
+            EnemyHeight = AutoEnemigo.getHeight();
+            PosIY = DeviceDisplay.height + EnemyHeight/2;
+            PosIX = DeviceDisplay.width/2;
+
+
+            AutoEnemigo.setPosition(PosIX, PosIY);
+
+            Float PosFX, PosFY;
+            PosFX = PosIX;
+            PosFY = -EnemyHeight/2;
+
+            AutoEnemigo.runAction(MoveTo.action(3, PosFX, PosFY));
+
+
+
+            super.addChild(AutoEnemigo);
+
         }
 
     }
