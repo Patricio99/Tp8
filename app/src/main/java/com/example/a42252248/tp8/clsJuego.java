@@ -1,6 +1,8 @@
 package com.example.a42252248.tp8;
 
+import android.bluetooth.BluetoothClass;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import org.cocos2d.actions.interval.MoveTo;
 import org.cocos2d.actions.interval.ScaleBy;
@@ -53,7 +55,6 @@ public class clsJuego {
 
 
 
-
         EscenaADevolver.addChild(MiCapaFondo, -10);
         EscenaADevolver.addChild(MiCapaFrente, 10);
 
@@ -82,10 +83,13 @@ public class clsJuego {
         private ArrayList<AutoEnemigo> autoEnemigosLst = new ArrayList<>();
         private boolean userLoose = false;
 
+
         public CapaDelFrente(){
             player = new Player(this);
             // this.setPosition(0, 0);
             super.schedule("AddEnemy", 3.0f);
+
+
         }
 
         public class Player {
@@ -93,6 +97,42 @@ public class clsJuego {
             private float x;
             private float y;
             public int points;
+
+            this.setIsTouchEnabled(true);
+            @Override
+            public boolean ccTouchesBegan(MotionEvent event){
+
+                MoverNaveJugador(event.getX(), event.getY());
+
+                return true;
+            }
+            void MoverNaveJugador(float DestinoX, float DestinoY){
+                float MovimientoHorizontal, Softer;
+                MovimientoHorizontal = DestinoX - DeviceDisplay.getWidth()/2;
+
+                Softer = 20;
+                MovimientoHorizontal = MovimientoHorizontal/Softer;
+
+                float PosFX;
+                PosFX = AutoJugador.getPositionX() + MovimientoHorizontal;
+
+                if (PosFX < AutoJugador.getWidth()/2){
+                    PosFX = AutoJugador.getWidth()/2;
+                }
+                if (PosFX > DeviceDisplay.getWidth() - AutoJugador.getWidth()/2){
+                    PosFX = DeviceDisplay.getWidth()-AutoJugador.getWidth()/2;
+                }
+
+                AutoJugador.setPosition(PosFX, AutoJugador.getPositionY());
+            }
+            @Override
+            public boolean ccTouchesMoved(MotionEvent event){
+                return true;
+            }
+            @Override
+            public boolean ccTouchesEnded(MotionEvent event){
+                return true;
+            }
 
             private Player(Layer l) {
                 int initialCarril = 2;
