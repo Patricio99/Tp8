@@ -18,6 +18,7 @@ import org.w3c.dom.Comment;
 
 import java.io.Console;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -26,8 +27,6 @@ public class clsJuego {
     CCGLSurfaceView _VistaDelJuego;
     CCSize DeviceDisplay;
     Sprite AutoJugador;
-    Sprite AutoEnemigo;
-    Sprite AutoEnemigo1;
     Sprite BackgroundImage;
     public clsJuego(CCGLSurfaceView VistaDelJuego){
         _VistaDelJuego = VistaDelJuego;
@@ -51,7 +50,6 @@ public class clsJuego {
 
         CapaDelFrente MiCapaFrente;
         MiCapaFrente = new CapaDelFrente();
-
 
 
 
@@ -84,12 +82,12 @@ public class clsJuego {
         private boolean userLoose = false;
 
 
+
         public CapaDelFrente(){
             player = new Player(this);
             // this.setPosition(0, 0);
             super.schedule("AddEnemy", 3.0f);
-
-
+            super.schedule("Update", 0);
         }
 
         public class Player {
@@ -98,14 +96,14 @@ public class clsJuego {
             private float y;
             public int points;
 
-            this.setIsTouchEnabled(true);
-            @Override
+            // this.setIsTouchEnabled(true);
+            /*@Override
             public boolean ccTouchesBegan(MotionEvent event){
 
                 MoverNaveJugador(event.getX(), event.getY());
 
                 return true;
-            }
+            }*/
             void MoverNaveJugador(float DestinoX, float DestinoY){
                 float MovimientoHorizontal, Softer;
                 MovimientoHorizontal = DestinoX - DeviceDisplay.getWidth()/2;
@@ -125,7 +123,7 @@ public class clsJuego {
 
                 AutoJugador.setPosition(PosFX, AutoJugador.getPositionY());
             }
-            @Override
+            /*@Override
             public boolean ccTouchesMoved(MotionEvent event){
                 return true;
             }
@@ -133,7 +131,7 @@ public class clsJuego {
             public boolean ccTouchesEnded(MotionEvent event){
                 return true;
             }
-
+*/
             private Player(Layer l) {
                 int initialCarril = 2;
                 this.sprite = Sprite.sprite("AutoJugador.png");
@@ -167,6 +165,7 @@ public class clsJuego {
             }
         }
         public void AddEnemy(float timeDiff) {
+            super.unschedule("AddEnemy");
 
             int carril = 0 + (int)(Math.random() * ((2- 0) + 1));
             int spriteNumber = 1 + (int)(Math.random() * ((2- 1) + 1));
@@ -177,11 +176,72 @@ public class clsJuego {
             autoEnemigosLst.add(autoEnemigo);
 
             removeFinishedAutoEnemigo(this.autoEnemigosLst);
-            Log.d("APP", "AddEnemy_" + this.autoEnemigosLst.size() + "_" + speed);
+            //TODO REMOVE THIS LINE
+            this.userLoose = false;
+            // Log.d("APP", "AddEnemy_" + this.autoEnemigosLst.size() + "_" + speed);
             if (!this.userLoose) {
                 float nextCar = getNextEnemyTimeElapse(this.player);
+
                 super.schedule("AddEnemy", nextCar );
             }
+        }
+        public void Update(float timeDiff) {
+            //
+            // Log.d("APP", "UPDATE_" + this.userLoose);
+            for (AutoEnemigo element : autoEnemigosLst) {
+                if(CheckColitions(element, player)) {
+                    this.userLoose = true;
+                    break;
+                }
+            }
+        }
+        public boolean CheckColitions(AutoEnemigo ae, Player p) {
+            boolean coloide = false;
+            if (p.sprite.getPositionX() > ae.sprite.getPositionX()) {
+                if (p.sprite.getPositionX() < ae.sprite.getPositionX() + ae.sprite.getWidth()) {
+                    // check for Y
+                    if (p.sprite.getPositionY() > ae.sprite.getPositionY()) {
+                        if (p.sprite.getPositionY() > ae.sprite.getPositionY() + ae.sprite.getHeight()) {
+                            // colloide!
+                            coloide = true;
+                        } else {
+                            // not coloide
+                        }
+                    } else {
+                        if (p.sprite.getPositionY() + p.sprite.getHeight() > ae.sprite.getPositionY()) {
+                            // colloide!
+                            coloide = true;
+                        } else {
+                            // not coloide
+                        }
+                    }
+                } else {
+                    // not coloide
+                }
+            } else {
+                if (p.sprite.getPositionX() + p.sprite.getWidth() < ae.sprite.getPositionX()) {
+                    // check for Y
+                    if (p.sprite.getPositionY() > ae.sprite.getPositionY()) {
+                        if (p.sprite.getPositionY() > ae.sprite.getPositionY() + ae.sprite.getHeight()) {
+                            // colloide!
+                            coloide = true;
+                        } else {
+                            // not coloide
+                        }
+                    } else {
+                        if (p.sprite.getPositionY() + p.sprite.getHeight() > ae.sprite.getPositionY()) {
+                            // colloide!
+                            coloide = true;
+                        } else {
+                            // not coloide
+                        }
+                    }
+                } else {
+                    // not coloide
+                }
+            }
+
+            return coloide;
         }
         public float getSpeed(Player p) {
             float speed = - 25 / 10 * p.points + 5;
@@ -200,9 +260,13 @@ public class clsJuego {
             return speed;
         }
         public void removeFinishedAutoEnemigo(List<AutoEnemigo> autoEnemigoLst) {
-            for (AutoEnemigo element : autoEnemigoLst) {
-                if (element.animation.isDone()) {
-                    autoEnemigoLst.remove(autoEnemigoLst.indexOf(element));
+            Iterator<AutoEnemigo> iter = autoEnemigoLst.iterator();
+
+            while (iter.hasNext()) {
+                AutoEnemigo autoEnemigo = iter.next();
+
+                if (autoEnemigo.animation.isDone()) {
+                    iter.remove();
                     this.player.points++;
                 }
             }
