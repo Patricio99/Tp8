@@ -7,6 +7,8 @@ import android.view.MotionEvent;
 import org.cocos2d.actions.interval.MoveTo;
 import org.cocos2d.actions.interval.ScaleBy;
 import org.cocos2d.layers.Layer;
+import org.cocos2d.menus.Menu;
+import org.cocos2d.menus.MenuItemImage;
 import org.cocos2d.nodes.Director;
 import org.cocos2d.nodes.Label;
 import org.cocos2d.nodes.Scene;
@@ -102,10 +104,31 @@ public class clsJuego {
         }
 
         public CapaDelFrente(){
+
+
+
             player = new Player(this);
             super.schedule("AddEnemy", 3.0f);
             super.schedule("Update", 0);
+            PonerBoton();
             super.setIsTouchEnabled(true);
+        }
+
+        void PonerBoton(){
+            MenuItemImage RestartButton;
+            RestartButton = MenuItemImage.item("restart.png", "restart.png", this, "ResetGame");
+
+            float PosBotonRestartX, PosBotonRestartY;
+            PosBotonRestartX = DeviceDisplay.getWidth() - RestartButton.getWidth() / 2;
+            PosBotonRestartY = DeviceDisplay.getHeight() - RestartButton.getHeight() / 2;
+
+            RestartButton.setPosition(PosBotonRestartX, PosBotonRestartY);
+
+            Menu MenuDeBotones;
+            MenuDeBotones = Menu.menu(RestartButton);
+            MenuDeBotones.setPosition(0,0);
+
+            super.addChild(MenuDeBotones);
         }
 
         public class Player {
@@ -170,7 +193,6 @@ public class clsJuego {
             }
         }
         public void Update(float timeDiff) {
-            // Log.d("APP", "UPDATE_" + this.userLoose);
             for (AutoEnemigo element : autoEnemigosLst) {
                 if(InterseccionEntreSprites(element.sprite, player.sprite)) {
                     this.userLoose = true;
@@ -201,44 +223,44 @@ public class clsJuego {
                     +Sprite1Abajo+" - Arr: "+Sprite1Arriba);
             Log.d(";Interseccion", "Sp2 - Izq: "+Sprite2Izquierda+" - Der: " +Sprite2Derecha+" - Aba:"
                     +Sprite2Abajo+" - Arr:" +Sprite2Arriba);
-//Borde izq y borde inf de Sprite 1 está dentro de Sprite 2
+            //Borde izq y borde inf de Sprite 1 está dentro de Sprite 2
             if (EstaEntre(Sprite1Izquierda, Sprite2Izquierda, Sprite2Derecha) &&
                     EstaEntre(Sprite1Abajo, Sprite2Abajo, Sprite2Arriba)) {
 
                 Response=true;
             }
-//Borde izq y borde sup de Sprite 1 está dentro de Sprite 2
+            //Borde izq y borde sup de Sprite 1 está dentro de Sprite 2
             if (EstaEntre(Sprite1Izquierda, Sprite2Izquierda, Sprite2Derecha) &&
                     EstaEntre(Sprite1Arriba, Sprite2Abajo, Sprite2Arriba)) {
 
                 Response=true;
             }
-//Borde der y borde sup de Sprite 1 está dentro de Sprite 2
+            //Borde der y borde sup de Sprite 1 está dentro de Sprite 2
             if (EstaEntre(Sprite1Derecha, Sprite2Izquierda, Sprite2Derecha) && EstaEntre(Sprite1Arriba, Sprite2Abajo, Sprite2Arriba)) {
 
                 Response=true;
             }
-//Borde der y borde inf de Sprite 1 está dentro de Sprite 2
+            //Borde der y borde inf de Sprite 1 está dentro de Sprite 2
             if (EstaEntre(Sprite1Derecha, Sprite2Izquierda, Sprite2Derecha) && EstaEntre(Sprite1Abajo, Sprite2Abajo, Sprite2Arriba)) {
 
                 Response=true;
             }
-//Borde izq y borde inf de Sprite 2 está dentro de Sprite 1
+            //Borde izq y borde inf de Sprite 2 está dentro de Sprite 1
             if (EstaEntre(Sprite2Izquierda, Sprite1Izquierda, Sprite1Derecha) && EstaEntre(Sprite2Abajo, Sprite1Abajo, Sprite1Arriba)) {
 
                 Response=true;
             }
-//Borde izq y borde sup de Sprite 1 está dentro de Sprite 1
+            //Borde izq y borde sup de Sprite 1 está dentro de Sprite 1
             if (EstaEntre(Sprite2Izquierda, Sprite1Izquierda, Sprite1Derecha) && EstaEntre(Sprite2Arriba, Sprite1Abajo, Sprite1Arriba)) {
 
                 Response=true;
             }
-//Borde der y borde sup de Sprite 2 está dentro de Sprite 1
+            //Borde der y borde sup de Sprite 2 está dentro de Sprite 1
             if (EstaEntre(Sprite2Derecha, Sprite1Izquierda, Sprite1Derecha) && EstaEntre(Sprite2Arriba, Sprite1Abajo, Sprite1Arriba)) {
 
                 Response=true;
             }
-//Borde der y borde inf de Sprite 2 está dentro de Sprite 1
+            //Borde der y borde inf de Sprite 2 está dentro de Sprite 1
             if (EstaEntre(Sprite2Derecha, Sprite1Izquierda, Sprite1Derecha) && EstaEntre(Sprite2Abajo, Sprite1Abajo, Sprite1Arriba)) {
 
                 Response=true;
@@ -295,7 +317,7 @@ public class clsJuego {
             }
         }
 
-        private void ResetGame() {
+        public void ResetGame() {
             this.userLoose = false;
             this.player.points = 0;
 
