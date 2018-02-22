@@ -8,6 +8,7 @@ import org.cocos2d.actions.interval.MoveTo;
 import org.cocos2d.actions.interval.ScaleBy;
 import org.cocos2d.layers.Layer;
 import org.cocos2d.nodes.Director;
+import org.cocos2d.nodes.Label;
 import org.cocos2d.nodes.Scene;
 import org.cocos2d.nodes.Sprite;
 import org.cocos2d.opengl.CCGLSurfaceView;
@@ -26,7 +27,6 @@ import java.util.Random;
 public class clsJuego {
     CCGLSurfaceView _VistaDelJuego;
     CCSize DeviceDisplay;
-    Sprite AutoJugador;
     Sprite BackgroundImage;
     public clsJuego(CCGLSurfaceView VistaDelJuego){
         _VistaDelJuego = VistaDelJuego;
@@ -38,8 +38,9 @@ public class clsJuego {
         DeviceDisplay = Director.sharedDirector().displaySize();
 
         Director.sharedDirector().runWithScene(EscenaDelJuego());
-
     }
+
+
 
     private Scene EscenaDelJuego(){
         Scene EscenaADevolver;
@@ -50,7 +51,6 @@ public class clsJuego {
 
         CapaDelFrente MiCapaFrente;
         MiCapaFrente = new CapaDelFrente();
-
 
 
         EscenaADevolver.addChild(MiCapaFondo, -10);
@@ -80,14 +80,32 @@ public class clsJuego {
         private Player player;
         private ArrayList<AutoEnemigo> autoEnemigosLst = new ArrayList<>();
         private boolean userLoose = false;
+        private Label lblScore;
+        private Label lblLooseMessage;
+        @Override
+        public boolean ccTouchesMoved(MotionEvent e){
+
+            if ( this.userLoose) {
+                ResetGame();
+            } else {
+                this.player.sprite.setPosition(e.getX(), this.player.sprite.getHeight() / 2 + 50);
+            }
 
 
+            return true;
+        }
+        @Override
+        public boolean ccTouchesEnded(MotionEvent event){
+
+
+            return true;
+        }
 
         public CapaDelFrente(){
             player = new Player(this);
-            // this.setPosition(0, 0);
             super.schedule("AddEnemy", 3.0f);
             super.schedule("Update", 0);
+            super.setIsTouchEnabled(true);
         }
 
         public class Player {
@@ -96,42 +114,6 @@ public class clsJuego {
             private float y;
             public int points;
 
-            // this.setIsTouchEnabled(true);
-            /*@Override
-            public boolean ccTouchesBegan(MotionEvent event){
-
-                MoverNaveJugador(event.getX(), event.getY());
-
-                return true;
-            }*/
-            void MoverNaveJugador(float DestinoX, float DestinoY){
-                float MovimientoHorizontal, Softer;
-                MovimientoHorizontal = DestinoX - DeviceDisplay.getWidth()/2;
-
-                Softer = 20;
-                MovimientoHorizontal = MovimientoHorizontal/Softer;
-
-                float PosFX;
-                PosFX = AutoJugador.getPositionX() + MovimientoHorizontal;
-
-                if (PosFX < AutoJugador.getWidth()/2){
-                    PosFX = AutoJugador.getWidth()/2;
-                }
-                if (PosFX > DeviceDisplay.getWidth() - AutoJugador.getWidth()/2){
-                    PosFX = DeviceDisplay.getWidth()-AutoJugador.getWidth()/2;
-                }
-
-                AutoJugador.setPosition(PosFX, AutoJugador.getPositionY());
-            }
-            /*@Override
-            public boolean ccTouchesMoved(MotionEvent event){
-                return true;
-            }
-            @Override
-            public boolean ccTouchesEnded(MotionEvent event){
-                return true;
-            }
-*/
             private Player(Layer l) {
                 int initialCarril = 2;
                 this.sprite = Sprite.sprite("AutoJugador.png");
@@ -157,8 +139,6 @@ public class clsJuego {
 
                 this.sprite.setPosition(this.x, this.y);
                 l.addChild(this.sprite);
-
-
             }
             private void startMoving(){
                 this.animation = this.sprite.runAction(MoveTo.action(this.speed, this.x, -1 * (DeviceDisplay.height + this.sprite.getHeight())));
@@ -176,73 +156,118 @@ public class clsJuego {
             autoEnemigosLst.add(autoEnemigo);
 
             removeFinishedAutoEnemigo(this.autoEnemigosLst);
-            //TODO REMOVE THIS LINE
-            this.userLoose = false;
+
             // Log.d("APP", "AddEnemy_" + this.autoEnemigosLst.size() + "_" + speed);
             if (!this.userLoose) {
                 float nextCar = getNextEnemyTimeElapse(this.player);
 
                 super.schedule("AddEnemy", nextCar );
+            } else {
+                // this doesn't work
+                // Director.sharedDirector().stopAnimation();
+                showLooseMessage();
             }
         }
         public void Update(float timeDiff) {
-            //
             // Log.d("APP", "UPDATE_" + this.userLoose);
             for (AutoEnemigo element : autoEnemigosLst) {
-                if(CheckColitions(element, player)) {
+                if(InterseccionEntreSprites(element.sprite, player.sprite)) {
                     this.userLoose = true;
                     break;
                 }
             }
         }
-        public boolean CheckColitions(AutoEnemigo ae, Player p) {
-            boolean coloide = false;
-            if (p.sprite.getPositionX() > ae.sprite.getPositionX()) {
-                if (p.sprite.getPositionX() < ae.sprite.getPositionX() + ae.sprite.getWidth()) {
-                    // check for Y
-                    if (p.sprite.getPositionY() > ae.sprite.getPositionY()) {
-                        if (p.sprite.getPositionY() > ae.sprite.getPositionY() + ae.sprite.getHeight()) {
-                            // colloide!
-                            coloide = true;
-                        } else {
-                            // not coloide
-                        }
-                    } else {
-                        if (p.sprite.getPositionY() + p.sprite.getHeight() > ae.sprite.getPositionY()) {
-                            // colloide!
-                            coloide = true;
-                        } else {
-                            // not coloide
-                        }
-                    }
-                } else {
-                    // not coloide
-                }
-            } else {
-                if (p.sprite.getPositionX() + p.sprite.getWidth() < ae.sprite.getPositionX()) {
-                    // check for Y
-                    if (p.sprite.getPositionY() > ae.sprite.getPositionY()) {
-                        if (p.sprite.getPositionY() > ae.sprite.getPositionY() + ae.sprite.getHeight()) {
-                            // colloide!
-                            coloide = true;
-                        } else {
-                            // not coloide
-                        }
-                    } else {
-                        if (p.sprite.getPositionY() + p.sprite.getHeight() > ae.sprite.getPositionY()) {
-                            // colloide!
-                            coloide = true;
-                        } else {
-                            // not coloide
-                        }
-                    }
-                } else {
-                    // not coloide
-                }
-            }
 
-            return coloide;
+
+
+        boolean InterseccionEntreSprites (Sprite Sprite1, Sprite Sprite2) {
+            boolean Response;
+            Response = false;
+            int Sprite1Izquierda, Sprite1Derecha, Sprite1Abajo, Sprite1Arriba;
+            int Sprite2Izquierda, Sprite2Derecha, Sprite2Abajo, Sprite2Arriba;
+            Sprite1Izquierda=(int) (Sprite1.getPositionX() - Sprite1.getWidth()/2);
+            Sprite1Derecha=(int) (Sprite1.getPositionX() + Sprite1.getWidth()/2);
+            Sprite1Abajo=(int) (Sprite1.getPositionY() - Sprite1.getHeight()/2);
+            Sprite1Arriba=(int) (Sprite1.getPositionY() + Sprite1.getHeight()/2);
+            Sprite2Izquierda=(int) (Sprite2.getPositionX() - Sprite2.getWidth()/2);
+            Sprite2Derecha=(int) (Sprite2.getPositionX() + Sprite2.getWidth()/2);
+            Sprite2Abajo=(int) (Sprite2.getPositionY() - Sprite2.getHeight()/2);
+            Sprite2Arriba=(int) (Sprite2.getPositionY() + Sprite2.getHeight()/2);
+            Log.d("Interseccion", "Sp1 - Izq: "+Sprite1Izquierda+" - Der: "+Sprite1Derecha+" - Aba:"
+                    +Sprite1Abajo+" - Arr: "+Sprite1Arriba);
+            Log.d(";Interseccion", "Sp2 - Izq: "+Sprite2Izquierda+" - Der: " +Sprite2Derecha+" - Aba:"
+                    +Sprite2Abajo+" - Arr:" +Sprite2Arriba);
+//Borde izq y borde inf de Sprite 1 está dentro de Sprite 2
+            if (EstaEntre(Sprite1Izquierda, Sprite2Izquierda, Sprite2Derecha) &&
+                    EstaEntre(Sprite1Abajo, Sprite2Abajo, Sprite2Arriba)) {
+
+                Response=true;
+            }
+//Borde izq y borde sup de Sprite 1 está dentro de Sprite 2
+            if (EstaEntre(Sprite1Izquierda, Sprite2Izquierda, Sprite2Derecha) &&
+                    EstaEntre(Sprite1Arriba, Sprite2Abajo, Sprite2Arriba)) {
+
+                Response=true;
+            }
+//Borde der y borde sup de Sprite 1 está dentro de Sprite 2
+            if (EstaEntre(Sprite1Derecha, Sprite2Izquierda, Sprite2Derecha) && EstaEntre(Sprite1Arriba, Sprite2Abajo, Sprite2Arriba)) {
+
+                Response=true;
+            }
+//Borde der y borde inf de Sprite 1 está dentro de Sprite 2
+            if (EstaEntre(Sprite1Derecha, Sprite2Izquierda, Sprite2Derecha) && EstaEntre(Sprite1Abajo, Sprite2Abajo, Sprite2Arriba)) {
+
+                Response=true;
+            }
+//Borde izq y borde inf de Sprite 2 está dentro de Sprite 1
+            if (EstaEntre(Sprite2Izquierda, Sprite1Izquierda, Sprite1Derecha) && EstaEntre(Sprite2Abajo, Sprite1Abajo, Sprite1Arriba)) {
+
+                Response=true;
+            }
+//Borde izq y borde sup de Sprite 1 está dentro de Sprite 1
+            if (EstaEntre(Sprite2Izquierda, Sprite1Izquierda, Sprite1Derecha) && EstaEntre(Sprite2Arriba, Sprite1Abajo, Sprite1Arriba)) {
+
+                Response=true;
+            }
+//Borde der y borde sup de Sprite 2 está dentro de Sprite 1
+            if (EstaEntre(Sprite2Derecha, Sprite1Izquierda, Sprite1Derecha) && EstaEntre(Sprite2Arriba, Sprite1Abajo, Sprite1Arriba)) {
+
+                Response=true;
+            }
+//Borde der y borde inf de Sprite 2 está dentro de Sprite 1
+            if (EstaEntre(Sprite2Derecha, Sprite1Izquierda, Sprite1Derecha) && EstaEntre(Sprite2Abajo, Sprite1Abajo, Sprite1Arriba)) {
+
+                Response=true;
+            }
+            return Response;
         }
+
+        boolean EstaEntre (int NumeroAComparar, int NumeroMenor, int NumeroMayor){
+            boolean Devolver;
+
+            if(NumeroMenor > NumeroMayor) {
+                int auxiliar;
+                auxiliar = NumeroMayor;
+                NumeroMayor = NumeroMenor;
+                NumeroMenor = auxiliar;
+            }
+            if (NumeroAComparar >= NumeroMenor && NumeroAComparar <= NumeroMayor){
+                Devolver = true;
+            }
+            else{
+                Devolver = false;
+            }
+            return  Devolver;
+
+        }
+
+
+
+
+
+
+
+
         public float getSpeed(Player p) {
             float speed = - 25 / 10 * p.points + 5;
             if (speed < 1) {
@@ -268,10 +293,30 @@ public class clsJuego {
                 if (autoEnemigo.animation.isDone()) {
                     iter.remove();
                     this.player.points++;
+                    showUserScore();
                 }
             }
         }
 
+        private void ResetGame() {
+            this.userLoose = false;
+            this.player.points = 0;
+            super.schedule("AddEnemy", 3.0f);
+            super.removeChild(lblScore, false);
+            super.removeChild(lblLooseMessage, false);
+        }
+        private void showUserScore() {
+            super.removeChild(lblScore, false);
+            lblScore = Label.label("Tu puntaje es: " + this.player.points, "Verdana", 45);
+            lblScore.setPosition(lblScore.getWidth() / 2, DeviceDisplay.getHeight() - lblScore.getHeight() / 2);
+            this.addChild(lblScore);
+        }
+        private void showLooseMessage() {
+            super.removeChild(lblLooseMessage, false);
+            lblLooseMessage = Label.label("Perdiste!!!", "Verdana", 45);
+            lblLooseMessage.setPosition(DeviceDisplay.getWidth() / 2, DeviceDisplay.getHeight() / 2);
+            this.addChild(lblLooseMessage);
+        }
     }
 }
 

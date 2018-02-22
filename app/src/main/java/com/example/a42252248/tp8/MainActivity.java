@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.WindowManager;
 
+import org.cocos2d.nodes.Label;
 import org.cocos2d.opengl.CCGLSurfaceView;
 
 public class MainActivity extends Activity {
