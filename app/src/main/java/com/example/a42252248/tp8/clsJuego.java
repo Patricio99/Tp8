@@ -18,6 +18,7 @@ import org.cocos2d.types.CCSize;
 import org.w3c.dom.Comment;
 
 import java.io.Console;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -82,12 +83,11 @@ public class clsJuego {
         private boolean userLoose = false;
         private Label lblScore;
         private Label lblLooseMessage;
+
         @Override
         public boolean ccTouchesMoved(MotionEvent e){
 
-            if ( this.userLoose) {
-                ResetGame();
-            } else {
+            if ( !this.userLoose) {
                 this.player.sprite.setPosition(e.getX(), this.player.sprite.getHeight() / 2 + 50);
             }
 
@@ -146,26 +146,27 @@ public class clsJuego {
         }
         public void AddEnemy(float timeDiff) {
             super.unschedule("AddEnemy");
-
-            int carril = 0 + (int)(Math.random() * ((2- 0) + 1));
-            int spriteNumber = 1 + (int)(Math.random() * ((2- 1) + 1));
-            float speed = getSpeed(this.player);
-            AutoEnemigo autoEnemigo = new AutoEnemigo(this, spriteNumber, speed, carril);
-            autoEnemigo.startMoving();
-
-            autoEnemigosLst.add(autoEnemigo);
-
-            removeFinishedAutoEnemigo(this.autoEnemigosLst);
-
-            // Log.d("APP", "AddEnemy_" + this.autoEnemigosLst.size() + "_" + speed);
+            // to avoid the next car
             if (!this.userLoose) {
-                float nextCar = getNextEnemyTimeElapse(this.player);
+                int carril = 0 + (int) (Math.random() * ((2 - 0) + 1));
+                int spriteNumber = 1 + (int) (Math.random() * ((2 - 1) + 1));
+                float speed = getSpeed(this.player);
+                AutoEnemigo autoEnemigo = new AutoEnemigo(this, spriteNumber, speed, carril);
+                autoEnemigo.startMoving();
 
-                super.schedule("AddEnemy", nextCar );
-            } else {
-                // this doesn't work
-                // Director.sharedDirector().stopAnimation();
-                showLooseMessage();
+                autoEnemigosLst.add(autoEnemigo);
+
+                removeFinishedAutoEnemigo(this.autoEnemigosLst);
+
+                // Log.d("APP", "AddEnemy_" + this.autoEnemigosLst.size() + "_" + speed);
+                if (!this.userLoose) {
+                    float nextCar = getNextEnemyTimeElapse(this.player);
+
+                    super.schedule("AddEnemy", nextCar);
+                } else {
+                    // this doesn't work
+                    // Director.sharedDirector().stopAnimation();
+                }
             }
         }
         public void Update(float timeDiff) {
@@ -173,6 +174,9 @@ public class clsJuego {
             for (AutoEnemigo element : autoEnemigosLst) {
                 if(InterseccionEntreSprites(element.sprite, player.sprite)) {
                     this.userLoose = true;
+                    showLooseMessage();
+                    element.sprite.stopAllActions();
+                    Director.sharedDirector().runningScene().stopAllActions();
                     break;
                 }
             }
@@ -261,13 +265,6 @@ public class clsJuego {
 
         }
 
-
-
-
-
-
-
-
         public float getSpeed(Player p) {
             float speed = - 25 / 10 * p.points + 5;
             if (speed < 1) {
@@ -301,6 +298,11 @@ public class clsJuego {
         private void ResetGame() {
             this.userLoose = false;
             this.player.points = 0;
+
+            for (AutoEnemigo element : autoEnemigosLst) {
+                super.removeChild(element.sprite, true);
+            }
+            this.autoEnemigosLst.clear();
             super.schedule("AddEnemy", 3.0f);
             super.removeChild(lblScore, false);
             super.removeChild(lblLooseMessage, false);
